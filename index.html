@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>google map</title>
+<style>
+#map_wrapper {
+    height: 1920px;
+	width:1080px;
+}
+
+#map_canvas {
+    width: 100%;
+    height: 100%;
+}
+.info_content{
+	width:180px;
+	height:70px;
+	font-size:2em;
+	text-align:center;
+	padding-left:10px;
+	color:#00537B;
+
+}
+
+#bar{
+	width:1080px;
+	height:240px;
+	background-image:url(img/bottom_bar.png); 
+	background-repeat:no-repeat;
+	
+}
+#bar h1{
+	color:#fff;
+	text-align:center;
+	font-family:century gothic;
+	font-size:2.2em;
+	line-height:280px;
+}
+#close_gallery{position:absolute;
+margin-top:140px;
+margin-left:50px;
+}
+</style>
+<script src="js/jquery-2.1.1.min.js"></script>
+</head>
+
+<body>
+
+<div id="map_wrapper">
+	<input type="text" id="userName" >un</input>
+	<input type="text" id="latLoc" >lat</input>
+	<input type="text" id="langLoc">lang</input>
+    <button id="addBTN" onclick = "addSurfBoard()" >Add Surfboard</button>
+    <div id="map_canvas" class="mapping"></div>
+    <div id="gallery" style="height:670px;width:1080px;position:absolute;">
+    
+    <div id="bar">
+     <button><img id="close_gallery" src="img/x.png" ></button>
+      <h1>5’4 28L al merrick biscuit</h1>
+        </div>
+    <div id="slider_img" style="width:1080px; height:500px; background-color:#fff;"></div>
+       
+   
+    </div>
+</div>
+
+
+
+<!--google map-->
+<script>
+
+	var map = null;
+	var markers = [];
+	var bounds;
+		
+jQuery(function($) {
+    // Asynchronously Load the map API 
+    var script = document.createElement('script');
+    script.src = "http://maps.googleapis.com/maps/api/js?sensor=false&callback=initialize";
+    document.body.appendChild(script);
+});
+	
+//initialize a map with the surfboards tags on it
+function initialize() {
+	
+	bounds = new google.maps.LatLngBounds();
+	map = new google.maps.Map(document.getElementById('map_canvas'), {
+          center: new google.maps.LatLng(-34.029000,24.920000),
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+	var refresh = document.getElementById('addBTN');
+    google.maps.event.addDomListener(refresh, 'click', refreshMap);
+	
+	refreshMap();
+	
+	// Automatically centre the map fitting all markers on the screen
+    map.fitBounds(bounds);
+	
+	// Override our map zoom level once our fitBounds function runs (Make sure it only runs once)
+    var boundsListener = google.maps.event.addListener((map), 'bounds_changed', function(event) {
+        this.setZoom(14);
+        google.maps.event.removeListener(boundsListener);
+    });
+}
+
+	<!--close gallery-->
+	$("#bar").on("button").click(function(){
+	$("#gallery").animate({bottom:'-670px'});
+    });
+
+function refreshMap(){
+	markers.push(['Alon nir', -34.036979,24.926669]);
+    markers.push([ 'Liron Dadon',-34.029297,24.920489]);
+    markers.push([ 'Rotrm malul',-34.041815,24.926326]);
+	markers.push([ 'Moshe',-34.044944,24.922893]);
+	markers.push([ 'Rani radzeli',-34.037548,24.917743]);
+	markers.push([ 'Haim',-34.044660,24.922206]);	
+	
+	// Display multiple markers on a map
+    var infoWindow = new google.maps.InfoWindow(), marker, i;
+    
+    // Loop through our array of markers & place each one on the map  
+    for( i = 0; i < markers.length; i++ ) {
+        var position = new google.maps.LatLng(markers[i][1], markers[i][2]);
+		bounds.extend(position);
+        var marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: markers[i][0],
+			icon: 'img/whaler_big.png'
+        });	
+		
+		<!--handler while clicking on marker : open its gallery, centerize the map, view content-->
+        google.maps.event.addListener(marker, 'click', (function(marker, i) {
+            return function() {
+                var infoWindowContent = CreateContent(marker.title);
+				map.setCenter(marker.position);
+				infoWindow.setContent(infoWindowContent);
+				infoWindow.open(map, marker);
+				$("#gallery").animate({bottom: '15px'});
+            }
+        })(marker, i));
+
+        // Automatically centre the map fitting all markers on the screen
+        map.fitBounds(bounds);
+			
+		//var close = document.getElementById('close_gallery');
+        //google.maps.event.addDomListener(close, 'click', clearClusters);
+	}
+	
+}
+
+//function closeGallery() {
+  //      document.getElementById("gallery").animate({bottom: '-670px'});
+    //  }
+
+function CreateContent(username){
+	var div = '<div class="info_content">' + '<h3>' + username + '</h3>' + '' + '</div>'
+	return div;
+}
+
+
+function addSurfBoard(){
+/*
+	var userName =  document.getElementById("userName").value;
+	var lat =  document.getElementById("latLoc").value;
+	var lng =  document.getElementById("langLoc").value;
+*/
+	var userName =  'netanel dadon';
+	var lat =  -34.036300;
+	var lng =  24.926300;
+	
+	markers.push([userName,lat,lng]);
+	var newPos = new google.maps.LatLng(lat,lng);
+	newMarker = new google.maps.Marker({
+			position: newPos,
+			map:map,
+            title: userName,
+			icon: 'img/whaler_big.png'
+        });
+		newMarker.setMap(map);
+		refreshMap();
+		alert("surfboard was added successfuly!");
+}
+
+
+
+
+
+</script>
+</body>
+</html>
